@@ -1,0 +1,94 @@
+# JARVIS SOLUTION WEEK 2 25th September 2015
+
+/*
+   coded by HITKUL
+
+   --------------------HOW IT WORKS----------------------------------------
+   1. First decode the png image using the lodepng lib
+ 		
+ 		This lib decode your image into a 1-D array in which 4 indices represent
+ 		one pixel.one for Red value, one for Green value, one for Blue value and one 
+ 		for Alpha value. 
+		______________________________________
+ 		|R1|G1|B1|A1|R2|G2|B2|A2........... 
+ 		--------------------------------------
+
+ 	2. Once we have the image decoded I do the sum of RGBA vale of each pixel and 
+ 		place them in a 2D matrix which have the width and height of image so now each
+ 		cell of 2D matrix represtent a pixel
+
+ 	3. As for white R+G+B+A is 1020 so traverse the array and all the pixels having 
+ 		value less then it, This will be the area of circle
+
+ 	4. Again start traversing the array and when you find the first black pixel
+ 		start counting black pixels straight vertically downwards, this will be the
+ 		diameter of the circle
+
+ 	5. Use formula Area=PI*radius*radius 
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "lodepng.h"
+
+int main()
+{
+
+    unsigned char *image;
+    char *in="image.png";
+
+    unsigned int rgba,k=0,i,j,width,height,error,flag1,flag2,check=1;
+//Decode image using lodepng
+    float area=0.0,diameter=0.0;
+    error = lodepng_decode32_file(&image, &width, &height, in);
+    if(error)
+    {
+        printf("%s decoder error %u: %s\n", in,error, lodepng_error_text(error));
+        exit(1);
+    }
+//add values from 1D image array to 2D array
+    rgba=width*height*4;
+    int image_2d[width][height];
+
+	for (i = 0; i < height; ++i)
+	{
+		for ( j = 0; j < width; ++j)
+		{
+			image_2d[i][j]=image[k]+image[k+1]+image[k+2]+image[k+3];
+			k+=4;
+		}
+	}
+//calculating area of the circle
+	for ( i = 0; i < height; ++i)
+	{
+		for ( j = 0; j < width; ++j)
+		{
+			if(image_2d[i][j]<1020)
+				area++;
+		}
+	}
+//finding position of first black pixel
+	for ( i = 0; i < height&& check; ++i)
+	{
+		for ( j = 0; j < width&&check; ++j)
+		{
+			if(image_2d[i][j]<1020){
+				flag1=i;
+				flag2=j;
+				check=0;
+			}
+				
+		}
+	}	
+//calculating diameter of the circle
+	for ( i = flag1; i < height; ++i)
+	{
+		if (image_2d[i][flag2]<1020)
+		{
+			diameter++;
+		}
+	}
+//calculating value of pi
+	printf("Value of pi is==>%f\n",(area/((diameter*diameter)/4)));
+    return 0;
+}
